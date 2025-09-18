@@ -136,7 +136,7 @@ function M.nix_setup()
 	if vim.fn.isdirectory("/nix") == 0 then
 		return
 	end
-	require("lspconfig").nil_ls.setup {
+	vim.lsp.config("nil_ls", {
 		capabilities = M.capabilities(),
 		settings = {
 			["nil"] = {
@@ -145,11 +145,12 @@ function M.nix_setup()
 				},
 			},
 		},
-	}
+	})
+	vim.lsp.enable("nil_ls")
 end
 
 function M.lua_setup()
-	require("lspconfig").lua_ls.setup {
+	vim.lsp.config("lua_ls", {
 		capabilities = M.capabilities(),
 		settings = {
 			Lua = {
@@ -168,37 +169,42 @@ function M.lua_setup()
 				telemetry = { enable = false },
 			},
 		},
-	}
+	})
+	vim.lsp.enable("lua_ls")
 end
 
 function M.go_setup()
-	require("lspconfig").gopls.setup {
+	vim.lsp.config("gopls", {
 		capabilities = M.capabilities(),
-	}
+	})
+	vim.lsp.enable("gopls")
 end
 
 function M.fe_setup()
-	require("lspconfig").ts_ls.setup {
+	vim.lsp.config("ts_ls", {
 		capabilities = M.capabilities(),
-	}
-	require("lspconfig").html.setup {
+	})
+	vim.lsp.config("html", {
 		capabilities = M.capabilities(),
-	}
-	require("lspconfig").cssls.setup {
+	})
+	vim.lsp.config("cssls", {
 		capabilities = M.capabilities(),
 		settings = {
 			css = { validate = false },
 		},
-	}
+	})
 
-	local eslint_default = require("lspconfig").eslint.config_def.default_config
+	local eslint_cwd
+	local eslint_default = vim.lsp.config.eslint
 	local eslint_settings = { packageManager = "pnpm", useESLintClass = true }
 
-	if not eslint_default.root_dir(vim.fn.getcwd()) then
+	eslint_default.root_dir(0, function(dir) eslint_cwd = dir end)
+	if not eslint_cwd then
 		eslint_settings.experimental = { useFlatConfig = true }
 		eslint_settings.options = { overrideConfigFile = vim.fn.expand("$HOME/.config/rules/eslint/eslint.config.cjs") }
 	end
-	require("lspconfig").eslint.setup {
+
+	vim.lsp.config("eslint", {
 		filetypes = {
 			"json",
 			"jsonc",
@@ -208,22 +214,24 @@ function M.fe_setup()
 			"toml",
 			unpack(eslint_default.filetypes),
 		},
-		root_dir = function(fname) return eslint_default.root_dir(fname) or vim.fs.dirname(fname) end,
+		root_dir = function(bufnr, on_dir) on_dir(eslint_cwd or vim.fn.getcwd()) end,
 		-- https://github.com/Microsoft/vscode-eslint#settings-options
 		settings = eslint_settings,
 		on_attach = function(client, bufnr)
 			client.server_capabilities.documentFormattingProvider = true
 			client.server_capabilities.documentRangeFormattingProvider = true
 		end,
-	}
+	})
 
-	require("lspconfig").tailwindcss.setup {
+	vim.lsp.config("tailwindcss", {
 		capabilities = M.capabilities(),
-	}
+	})
+
+	vim.lsp.enable { "ts_ls", "html", "cssls", "eslint", "tailwindcss" }
 end
 
 function M.rust_setup()
-	require("lspconfig").rust_analyzer.setup {
+	vim.lsp.config("rust_analyzer", {
 		capabilities = M.capabilities(),
 		-- cmd = vim.lsp.rpc.connect("/tmp/ra-mux.sock"),
 		settings = {
@@ -231,14 +239,15 @@ function M.rust_setup()
 				cargo = { allFeatures = true },
 				procMacro = { enable = true },
 				checkOnSave = { command = "clippy" },
-				lspMux = {
-					version = "1",
-					method = "connect",
-					server = "rust-analyzer",
-				},
+				-- lspMux = {
+				-- 	version = "1",
+				-- 	method = "connect",
+				-- 	server = "rust-analyzer",
+				-- },
 			},
 		},
-	}
+	})
+	vim.lsp.enable("rust_analyzer")
 
 	vim.api.nvim_create_autocmd("BufWritePost", {
 		pattern = "*/Cargo.toml",
@@ -262,7 +271,7 @@ function M.python_setup()
 		},
 	}
 
-	require("lspconfig").pyright.setup {
+	vim.lsp.config("pyright", {
 		capabilities = capabilities,
 		settings = {
 			python = {
@@ -276,11 +285,12 @@ function M.python_setup()
 				},
 			},
 		},
-	}
+	})
+	vim.lsp.enable("pyright")
 end
 
 function M.json_setup()
-	require("lspconfig").jsonls.setup {
+	vim.lsp.config("jsonls", {
 		capabilities = M.capabilities(),
 		settings = {
 			json = {
@@ -288,30 +298,34 @@ function M.json_setup()
 				validate = { enable = true },
 			},
 		},
-	}
+	})
+	vim.lsp.enable("jsonls")
 end
 
 function M.yaml_setup()
-	require("lspconfig").yamlls.setup {
+	vim.lsp.config("yamlls", {
 		capabilities = M.capabilities(),
 		settings = {
 			yaml = {
 				schemas = require("schemastore").yaml.schemas(),
 			},
 		},
-	}
+	})
+	vim.lsp.enable("yamlls")
 end
 
 function M.toml_setup()
-	require("lspconfig").taplo.setup {
+	vim.lsp.config("taplo", {
 		capabilities = M.capabilities(),
-	}
+	})
+	vim.lsp.enable("taplo")
 end
 
 function M.markdown_setup()
-	require("lspconfig").marksman.setup {
+	vim.lsp.config("marksman", {
 		capabilities = M.capabilities(),
-	}
+	})
+	vim.lsp.enable("marksman")
 end
 
 return {
@@ -327,7 +341,7 @@ return {
 		},
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
-			-- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
+			-- :help lspconfig-all
 			M.nix_setup()
 			M.lua_setup()
 			M.go_setup()

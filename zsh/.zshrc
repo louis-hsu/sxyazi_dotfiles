@@ -8,12 +8,13 @@ unsetopt HIST_EXPIRE_DUPS_FIRST
 unsetopt EXTENDED_HISTORY
 
 # PATH
+if [[ "$(uname -sm)" = "Darwin arm64" ]] then export PATH=/opt/homebrew/bin:$PATH; fi
 export PATH=$HOME/.local/bin:$PATH
 export PATH=$PNPM_HOME:$PATH
 export PATH=$HOME/go/bin:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
+export PATH=$HOME/Documents/nvim/bin:$PATH
 export PATH=/opt/homebrew/opt/llvm/bin:$PATH
-if [[ "$(uname -sm)" = "Darwin arm64" ]] then export PATH=/opt/homebrew/bin:$PATH; fi
 export PATH=$HOME/Desktop/yazi/target/release:$PATH
 
 # Autoload

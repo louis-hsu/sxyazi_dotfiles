@@ -548,7 +548,6 @@ return {
 	-- Neovim plugin for Yazi
 	{
 		"mikavilpas/yazi.nvim",
-		dependencies = { "folke/snacks.nvim", lazy = true },
 		keys = {
 			{ "<leader>y", ":Yazi<cr>", silent = true },
 		},

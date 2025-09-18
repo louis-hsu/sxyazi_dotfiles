@@ -217,7 +217,7 @@ return {
 		-- END TODO
 	},
 	{
-		"echasnovski/mini.comment",
+		"nvim-mini/mini.comment",
 		dependencies = {
 			"nvim-treesitter/nvim-treesitter",
 			"JoosepAlviste/nvim-ts-context-commentstring",
