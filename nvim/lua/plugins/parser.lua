@@ -26,7 +26,6 @@ local M = {
 		"javascript",
 		"json",
 		"json5",
-		"jsonc",
 		"kdl",
 		"latex",
 		"lua",
@@ -57,75 +56,69 @@ local M = {
 	},
 }
 
+local function set_textobject_keymaps()
+	local move = require("nvim-treesitter-textobjects.move")
+	local select = require("nvim-treesitter-textobjects.select")
+
+	vim.keymap.set({ "n", "x", "o" }, "]a", function() move.goto_next_end("@parameter.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "]f", function() move.goto_next_end("@function.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "]c", function() move.goto_next_end("@class.outer", "textobjects") end)
+
+	vim.keymap.set({ "n", "x", "o" }, "[A", function() move.goto_previous_end("@parameter.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "[F", function() move.goto_previous_end("@function.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "[C", function() move.goto_previous_end("@class.outer", "textobjects") end)
+
+	vim.keymap.set({ "n", "x", "o" }, "[a", function() move.goto_previous_start("@parameter.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "[f", function() move.goto_previous_start("@function.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "[c", function() move.goto_previous_start("@class.outer", "textobjects") end)
+
+	vim.keymap.set({ "n", "x", "o" }, "]A", function() move.goto_next_start("@parameter.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "]F", function() move.goto_next_start("@function.outer", "textobjects") end)
+	vim.keymap.set({ "n", "x", "o" }, "]C", function() move.goto_next_start("@class.outer", "textobjects") end)
+
+	vim.keymap.set({ "x", "o" }, "af", function() select.select_textobject("@function.outer", "textobjects") end)
+	vim.keymap.set({ "x", "o" }, "kf", function() select.select_textobject("@function.inner", "textobjects") end)
+	vim.keymap.set({ "x", "o" }, "ab", function() select.select_textobject("@block.outer", "textobjects") end)
+	vim.keymap.set({ "x", "o" }, "kb", function() select.select_textobject("@block.inner", "textobjects") end)
+	vim.keymap.set({ "x", "o" }, "aa", function() select.select_textobject("@parameter.outer", "textobjects") end)
+	vim.keymap.set({ "x", "o" }, "ka", function() select.select_textobject("@parameter.inner", "textobjects") end)
+	vim.keymap.set({ "x", "o" }, "ac", function() select.select_textobject("@comment.outer", "textobjects") end)
+end
+
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
+		branch = "main",
+		build = function() require("nvim-treesitter").install(M.ts_langs, { summary = true }):wait() end,
 		dependencies = {
-			"windwp/nvim-ts-autotag",
-			"nvim-treesitter/nvim-treesitter-textobjects",
+			{ "windwp/nvim-ts-autotag", opts = {} },
+			{
+				"nvim-treesitter/nvim-treesitter-textobjects",
+				branch = "main",
+				config = function()
+					require("nvim-treesitter-textobjects").setup {
+						move = { set_jumps = true },
+						select = { lookahead = true, include_surrounding_whitespace = true },
+					}
+					set_textobject_keymaps()
+				end,
+			},
 		},
-		build = ":TSUpdate",
-		event = { "BufReadPre", "BufNewFile" },
 		config = function()
-			require("nvim-treesitter.configs").setup {
-				ensure_installed = M.ts_langs,
-				highlight = {
-					enable = true,
-					disable = function(lang, bufnr) return vim.api.nvim_buf_line_count(bufnr) > 5000 end,
-				},
-				incremental_selection = {
-					enable = true,
-					keymaps = {
-						init_selection = "<CR>",
-						node_incremental = "<CR>",
-						node_decremental = "<S-CR>",
-						scope_incremental = false,
-					},
-				},
-				indent = { enable = true },
-				autotag = { enable = true },
-				textobjects = {
-					move = {
-						enable = true,
-						set_jumps = true,
-						goto_next_end = {
-							["]a"] = "@parameter.outer",
-							["]f"] = "@function.outer",
-							["]c"] = "@class.outer",
-						},
-						goto_previous_end = {
-							["[A"] = "@parameter.outer",
-							["[F"] = "@function.outer",
-							["[C"] = "@class.outer",
-						},
-						goto_previous_start = {
-							["[a"] = "@parameter.outer",
-							["[f"] = "@function.outer",
-							["[c"] = "@class.outer",
-						},
-						goto_next_start = {
-							["]A"] = "@parameter.outer",
-							["]F"] = "@function.outer",
-							["]C"] = "@class.outer",
-						},
-					},
-					select = {
-						enable = true,
-						lookahead = true,
-						keymaps = {
-							-- https://github.com/nvim-treesitter/nvim-treesitter-textobjects/blob/master/scripts/minimal_init.lua#L41
-							["af"] = "@function.outer",
-							["kf"] = "@function.inner",
-							["ab"] = "@block.outer",
-							["kb"] = "@block.inner",
-							["aa"] = "@parameter.outer",
-							["ka"] = "@parameter.inner",
-							["ac"] = "@comment.outer",
-						},
-						include_surrounding_whitespace = true,
-					},
-				},
-			}
+			require("selection").setup()
+			vim.api.nvim_create_autocmd("FileType", {
+				group = vim.api.nvim_create_augroup("user_treesitter", { clear = true }),
+				pattern = M.ts_langs,
+				callback = function(args)
+					if vim.api.nvim_buf_line_count(args.buf) > 5000 then
+						return
+					end
+
+					vim.treesitter.start(args.buf)
+					vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+					require("selection").attach(args.buf)
+				end,
+			})
 		end,
 	},
 
@@ -156,5 +149,25 @@ return {
 				},
 			}
 		end,
+	},
+
+	{
+		"stevearc/aerial.nvim",
+		dependencies = {
+			"nvim-treesitter/nvim-treesitter",
+			"nvim-tree/nvim-web-devicons",
+		},
+		opts = {
+			layout = {
+				default_direction = "prefer_left",
+			},
+			keymaps = {
+				["<C-v>"] = false,
+				["<Tab>"] = "actions.jump",
+			},
+		},
+		keys = {
+			{ "<leader>u", "<cmd>AerialToggle<CR>" },
+		},
 	},
 }

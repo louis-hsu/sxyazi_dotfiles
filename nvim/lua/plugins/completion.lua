@@ -220,7 +220,10 @@ return {
 		"nvim-mini/mini.comment",
 		dependencies = {
 			"nvim-treesitter/nvim-treesitter",
-			"JoosepAlviste/nvim-ts-context-commentstring",
+			{
+				"JoosepAlviste/nvim-ts-context-commentstring",
+				opts = { enable_autocmd = false },
+			},
 		},
 		keys = {
 			{ "<leader>c", nil, mode = { "n", "o", "x" } },
@@ -228,15 +231,15 @@ return {
 		opts = {
 			options = {
 				ignore_blank_line = true,
+				custom_commentstring = function()
+					return require("ts_context_commentstring").calculate_commentstring() or vim.bo.commentstring
+				end,
 			},
 			mappings = {
 				comment = "<leader>c",
 				comment_line = "<leader>c",
 				comment_visual = "<leader>c",
 				textobject = "<leader>c",
-			},
-			hooks = {
-				pre = function() require("ts_context_commentstring.internal").update_commentstring {} end,
 			},
 		},
 	},

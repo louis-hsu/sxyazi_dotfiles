@@ -13,8 +13,8 @@ export PATH=$HOME/.local/bin:$PATH
 export PATH=$PNPM_HOME:$PATH
 export PATH=$HOME/go/bin:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
-export PATH=$HOME/Documents/nvim/bin:$PATH
 export PATH=/opt/homebrew/opt/llvm/bin:$PATH
+export PATH=$HOME/Desktop/yazi/target/debug:$PATH
 export PATH=$HOME/Desktop/yazi/target/release:$PATH
 
 # Autoload

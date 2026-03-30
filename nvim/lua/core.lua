@@ -27,7 +27,7 @@ vim.opt.smartindent = true
 -- Folding
 vim.opt.foldlevel = 99
 vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 
 -- UI
 vim.opt.winblend = 0
@@ -78,12 +78,15 @@ vim.g.loaded_perl_provider = 0
 vim.opt.updatetime = 300
 vim.cmd([[autocmd CursorHold * lua vim.diagnostic.open_float()]])
 
-vim.fn.sign_define("DiagnosticSignError", { text = " ", texthl = "DiagnosticSignError" })
-vim.fn.sign_define("DiagnosticSignWarn", { text = " ", texthl = "DiagnosticSignWarn" })
-vim.fn.sign_define("DiagnosticSignInfo", { text = " ", texthl = "DiagnosticSignInfo" })
-vim.fn.sign_define("DiagnosticSignHint", { text = "󰌵", texthl = "DiagnosticSignHint" })
-
 vim.diagnostic.config {
+	signs = {
+		text = {
+			[vim.diagnostic.severity.ERROR] = " ",
+			[vim.diagnostic.severity.WARN] = " ",
+			[vim.diagnostic.severity.INFO] = " ",
+			[vim.diagnostic.severity.HINT] = "󰌵",
+		},
+	},
 	virtual_text = false,
 	float = { header = "", prefix = "", focusable = false },
 	update_in_insert = true,

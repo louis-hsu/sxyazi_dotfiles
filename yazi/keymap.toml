@@ -31,7 +31,7 @@ prepend_keymap = [
 
 	# Goto
 	{ on = [ "g", "r" ], run = 'shell -- ya emit cd "$(git rev-parse --show-toplevel)"' },
-	{ on = [ "g", "v" ], run = 'shell -- ya emit cd "$(zoxide query Friends)"' },
+	{ on = [ "g", "v" ], run = 'shell -- ya emit cd "$(zoxide query disk2)"' },
 	{ on = [ "g", "c" ], run = "plugin vcs-files" },
 
 	# Shell

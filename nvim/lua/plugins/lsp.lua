@@ -3,7 +3,6 @@ local M = {
 		-- Lua
 		"lua-language-server", -- language server
 		"stylua", -- formatter
-		"luacheck", -- linter
 
 		-- Golang
 		"gopls", -- language server
@@ -53,10 +52,6 @@ local M = {
 		stylua = {
 			files = { "stylua.toml", ".stylua.toml" },
 			default = vim.fn.expand("$HOME/.config/rules/stylua.toml"),
-		},
-		luacheck = {
-			files = { ".luacheckrc" },
-			default = vim.fn.expand("$HOME/.config/rules/.luacheckrc"),
 		},
 		revive = {
 			files = { "revive.toml" },
@@ -238,7 +233,7 @@ function M.rust_setup()
 			["rust-analyzer"] = {
 				cargo = { allFeatures = true },
 				procMacro = { enable = true },
-				checkOnSave = { command = "clippy" },
+				-- checkOnSave = { command = "clippy" },
 				-- lspMux = {
 				-- 	version = "1",
 				-- 	method = "connect",
@@ -366,13 +361,13 @@ return {
 					vim.keymap.set(
 						"n",
 						"[e",
-						function() vim.diagnostic.goto_prev { severity = vim.diagnostic.severity.ERROR } end,
+						function() vim.diagnostic.jump { count = -1, severity = vim.diagnostic.severity.ERROR } end,
 						{ buffer = event.buf }
 					)
 					vim.keymap.set(
 						"n",
 						"]e",
-						function() vim.diagnostic.goto_next { severity = vim.diagnostic.severity.ERROR } end,
+						function() vim.diagnostic.jump { count = 1, severity = vim.diagnostic.severity.ERROR } end,
 						{ buffer = event.buf }
 					)
 				end,
@@ -458,7 +453,6 @@ return {
 		config = function()
 			local lint = require("lint")
 			lint.linters_by_ft = {
-				lua = { "luacheck" },
 				go = { "revive" },
 				css = { "stylelint" },
 				less = { "stylelint" },
@@ -467,15 +461,6 @@ return {
 				yaml = { "actionlint" },
 			}
 
-			lint.linters.luacheck.args = {
-				"--config",
-				M.resolve_config("luacheck"),
-				"--formatter",
-				"plain",
-				"--codes",
-				"--ranges",
-				"-",
-			}
 			lint.linters.revive.args = { "-config", M.resolve_config("revive") }
 			lint.linters.stylelint.args = {
 				"-c",

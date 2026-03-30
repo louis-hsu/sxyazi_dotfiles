@@ -5,7 +5,7 @@ return {
 		event = "VeryLazy",
 		opts = {
 			options = {
-				theme = "catppuccin",
+				theme = "catppuccin-nvim",
 				component_separators = "|",
 				section_separators = { left = "", right = "" },
 				globalstatus = true,
@@ -170,7 +170,7 @@ return {
 		end,
 		opts = {
 			input = {
-				insert_only = false,
+				start_mode = "insert",
 				win_options = { winblend = 0 },
 				mappings = {
 					n = {
@@ -264,7 +264,6 @@ return {
 					"<leader>i",
 					function() require("telescope.builtin").lsp_implementations { initial_mode = "normal", reuse_win = true } end,
 				},
-				{ "<leader>u", function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end },
 			}
 		end,
 		config = function()

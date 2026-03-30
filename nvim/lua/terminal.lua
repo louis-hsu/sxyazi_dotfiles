@@ -16,11 +16,12 @@ function M.open(cwd)
 	vim.api.nvim_win_set_height(M.window, M.height)
 
 	if vim.fn.bufexists(M.buffer) == 0 then
-		local job_id = nil
+		local job_id
 		M.buffer = vim.fn.bufnr("%")
-		M.job_id = vim.fn.termopen(vim.o.shell, {
+		M.job_id = vim.fn.jobstart(vim.o.shell, {
 			cwd = cwd or vim.fn.getcwd(),
 			detach = true,
+			term = true,
 			on_exit = function()
 				if M.job_id == job_id then
 					M.destroy()
